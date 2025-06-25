@@ -1,0 +1,159 @@
+#define NOTA_D4 294
+#define NOTA_G4 392
+#define NOTA_A4 440
+#define NOTA_A5 880
+
+int tons[4] = { NOTA_A5, NOTA_A4, NOTA_G4, NOTA_D4};
+int sequencia[100]={};
+int rodada_atual=0;
+int passo_atual_na_sequencia=0;
+
+int pino_Audio = 12;
+int pinos_LEDS[4]= {3,4,5,6};
+int pinos_botoes[4]= {8,9,10,11};
+
+int botao_pressionado = 0;
+
+int perdeu_o_jogo = false;
+
+
+void setup() {
+
+for (int i=0; i<=3;i++){
+  pinMode(pinos_LEDS[i], OUTPUT);
+}
+
+
+for (int i=0; i<=3;i++){
+  pinMode(pinos_botoes[i], INPUT_PULLUP);
+}
+
+pinMode(pino_Audio, OUTPUT);
+
+randomSeed(analogRead(0));
+
+
+
+}
+
+void loop() {
+
+if(perdeu_o_jogo){
+  int sequencia[100]={};
+  rodada_atual = 0;
+  passo_atual_na_sequencia = 0;
+  perdeu_o_jogo = false;
+}
+
+if(rodada_atual==0){
+  tocar_som_inicio();
+  delay(500);
+}
+
+proxima_rodada();
+
+reproduzir_sequencia();
+
+aguardar_jogador();
+
+delay(100);
+
+}
+
+
+void proxima_rodada(){
+  int numero_sorteado = random(0,4);
+  sequencia[rodada_atual++] = numero_sorteado;
+}
+
+void reproduzir_sequencia(){
+   for(int i=0;i<rodada_atual;i++){
+   tone(pino_Audio, tons[sequencia[i]]);
+   digitalWrite(pinos_LEDS[sequencia[i]], HIGH);
+   delay(500);
+   noTone(pino_Audio);
+   digitalWrite(pinos_LEDS[sequencia[i]], LOW); 
+   delay(100);
+   }
+   noTone(pino_Audio);
+   
+}
+
+void aguardar_jogador(){
+  for(int i=0;i<rodada_atual;i++){
+    aguardar_jogada();
+    verificar_jogada();
+    if(perdeu_o_jogo){
+      break;
+    }
+    passo_atual_na_sequencia++;
+  }
+  passo_atual_na_sequencia = 0;
+}
+
+void aguardar_jogada(){
+ boolean jogada_efetuada = false;
+ while(!jogada_efetuada){
+ for(int i=0;i<=3;i++){
+    if(digitalRead(pinos_botoes[i]) == HIGH){
+    botao_pressionado = i;
+    tone(pino_Audio, tons[i]);
+    digitalWrite(pinos_LEDS[i], HIGH);
+    delay(300);
+    digitalWrite(pinos_LEDS[i], LOW);
+    noTone(pino_Audio);
+    jogada_efetuada = true;  
+    }
+ }
+ delay(10);
+   
+ }
+}
+
+
+
+void verificar_jogada(){
+  if(sequencia[passo_atual_na_sequencia]!= botao_pressionado){
+    // GAME OVER
+    for (int i = 0; i <= 3; i++) {
+      tone(pino_Audio, tons[i]);
+      digitalWrite(pinos_LEDS[i], HIGH);
+      delay(200);
+      digitalWrite(pinos_LEDS[i], LOW);
+      noTone(pino_Audio);
+    }
+ 
+    tone(pino_Audio, tons[3]);
+    for (int i = 0; i <= 3; i++) {
+      digitalWrite(pinos_LEDS[0], HIGH);
+      digitalWrite(pinos_LEDS[1], HIGH);
+      digitalWrite(pinos_LEDS[2], HIGH);
+      digitalWrite(pinos_LEDS[3], HIGH);
+      delay(100);
+      digitalWrite(pinos_LEDS[0], LOW);
+      digitalWrite(pinos_LEDS[1], LOW);
+      digitalWrite(pinos_LEDS[2], LOW);
+      digitalWrite(pinos_LEDS[3], LOW);
+      delay(100);
+    }
+    noTone(pino_Audio);
+ 
+    perdeu_o_jogo = true;
+  }
+}
+
+void tocar_som_inicio(){
+tone(pino_Audio, tons[0]);
+  digitalWrite(pinos_LEDS[0], HIGH);
+  digitalWrite(pinos_LEDS[1], HIGH);
+  digitalWrite(pinos_LEDS[2], HIGH);
+  digitalWrite(pinos_LEDS[3], HIGH);
+  delay(500);
+  digitalWrite(pinos_LEDS[0], LOW);
+  digitalWrite(pinos_LEDS[1], LOW);
+  digitalWrite(pinos_LEDS[2], LOW);
+  digitalWrite(pinos_LEDS[3], LOW);
+  delay(500);
+  noTone(pino_Audio);
+  
+}
